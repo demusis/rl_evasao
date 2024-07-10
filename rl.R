@@ -4,6 +4,8 @@ library(ggplot2)
 library(readxl)
 library(dplyr)
 library(tidyr)
+library(openxlsx)
+library(caret) # Para funções de avaliação de modelo
 
 setwd("~/rl")
 
@@ -44,10 +46,44 @@ sfaic <- step(ajuste_nulo, scope=formula(ajuste), direction="forward")
 sfbic <- step(ajuste_nulo, scope=formula(ajuste), direction="forward", k=log(nrow(dados_numericos)))
 summary(sfbic)
 
-# Função para salvar o resumo do modelo em arquivos CSV
-salvar_resumo_modelo <- function(modelo, nome_arquivo, metodo) {
+# Função para calcular as métricas de avaliação
+calcular_metricas <- function(modelo, dados, resposta) {
+  pred_prob <- predict(modelo, type = "response")
+  pred <- ifelse(pred_prob > 0.5, 1, 0)
+  
+  cm <- confusionMatrix(factor(pred), factor(resposta))
+  
+  metrics <- data.frame(
+    Accuracy = cm$overall["Accuracy"],
+    Sensitivity = cm$byClass["Sensitivity"],
+    Specificity = cm$byClass["Specificity"],
+    VPP = cm$byClass["Pos Pred Value"],
+    VPN = cm$byClass["Neg Pred Value"]
+  )
+  
+  return(metrics)
+}
+
+# Função para salvar o resumo do modelo em arquivos Excel
+salvar_resumo_modelo <- function(modelo, nome_arquivo, metodo, dados, resposta) {
   coeficientes <- summary(modelo)$coefficients
   variaveis_significativas <- coeficientes[coeficientes[,4] < 0.05,]
+  
+  # Calcular odds ratios e intervalos de confiança
+  odds_ratios <- exp(coeficientes[,1])
+  conf_int <- exp(confint(modelo))
+  
+  # Criar um data frame para odds ratios e intervalos de confiança
+  odds_ratios_df <- data.frame(
+    Estimate = coeficientes[,1],
+    OR = odds_ratios,
+    CI_lower = conf_int[,1],
+    CI_upper = conf_int[,2]
+  )
+  rownames(odds_ratios_df) <- rownames(coeficientes)
+  
+  # Calcular métricas de avaliação
+  metrics <- calcular_metricas(modelo, dados, resposta)
   
   # Criar um data frame para as estatísticas do modelo
   estatisticas <- data.frame(
@@ -56,22 +92,30 @@ salvar_resumo_modelo <- function(modelo, nome_arquivo, metodo) {
     BIC = BIC(modelo),
     Metodo = metodo
   )
+  estatisticas <- cbind(estatisticas, metrics)
   
-  # Salvar estatísticas do modelo
-  write.csv(estatisticas, paste0(nome_arquivo, "_estatisticas.csv"), row.names = FALSE)
+  # Criar um workbook e adicionar as folhas
+  wb <- createWorkbook()
+  addWorksheet(wb, "Estatisticas")
+  addWorksheet(wb, "Coeficientes")
+  addWorksheet(wb, "Significativas")
+  addWorksheet(wb, "Odds Ratios")
   
-  # Salvar todos os coeficientes
-  write.csv(coeficientes, paste0(nome_arquivo, "_coeficientes.csv"))
+  # Escrever os data frames nas folhas correspondentes
+  writeData(wb, sheet = "Estatisticas", estatisticas)
+  writeData(wb, sheet = "Coeficientes", coeficientes, rowNames = TRUE)
+  writeData(wb, sheet = "Significativas", variaveis_significativas, rowNames = TRUE)
+  writeData(wb, sheet = "Odds Ratios", odds_ratios_df, rowNames = TRUE)
   
-  # Salvar apenas as variáveis significativas
-  write.csv(variaveis_significativas, paste0(nome_arquivo, "_significativas.csv"))
+  # Salvar o arquivo Excel
+  saveWorkbook(wb, paste0(nome_arquivo, ".xlsx"), overwrite = TRUE)
 }
 
 # Salvar os modelos sfaic e sfbic
-salvar_resumo_modelo(sfaic, "sfaic_model", "AIC")
-salvar_resumo_modelo(sfbic, "sfbic_model", "BIC")
+salvar_resumo_modelo(sfaic, "sfaic_model", "AIC", dados_numericos, variavel_resposta)
+salvar_resumo_modelo(sfbic, "sfbic_model", "BIC", dados_numericos, variavel_resposta)
 
-cat("Modelos salvos com sucesso nos arquivos sfaic_model_coeficientes.csv, sfaic_model_significativas.csv, sfaic_model_estatisticas.csv, sfbic_model_coeficientes.csv, sfbic_model_significativas.csv e sfbic_model_estatisticas.csv")
+cat("Modelos salvos com sucesso nos arquivos sfaic_model.xlsx e sfbic_model.xlsx")
 
 # Função para criar gráfico de tornado
 criar_grafico_tornado <- function(modelo, nome_grafico) {
