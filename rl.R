@@ -1,5 +1,6 @@
 # Carregar as bibliotecas necessárias
 library(bestglm)
+library(ggplot2)
 library(readxl)
 library(dplyr)
 library(tidyr)
@@ -71,3 +72,31 @@ salvar_resumo_modelo(sfaic, "sfaic_model", "AIC")
 salvar_resumo_modelo(sfbic, "sfbic_model", "BIC")
 
 cat("Modelos salvos com sucesso nos arquivos sfaic_model_coeficientes.csv, sfaic_model_significativas.csv, sfaic_model_estatisticas.csv, sfbic_model_coeficientes.csv, sfbic_model_significativas.csv e sfbic_model_estatisticas.csv")
+
+# Função para criar gráfico de tornado
+criar_grafico_tornado <- function(modelo, nome_grafico) {
+  coeficientes <- summary(modelo)$coefficients
+  coeficientes_df <- as.data.frame(coeficientes)
+  coeficientes_df$Variable <- rownames(coeficientes_df)
+  coeficientes_df <- coeficientes_df %>% 
+    arrange(Estimate) %>%
+    mutate(Variable = factor(Variable, levels = Variable))
+  
+  ggplot(coeficientes_df, aes(x = Variable, y = Estimate)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    theme_minimal() +
+    labs(title = paste("Tornado Plot for", nome_grafico), 
+         x = "Variable", 
+         y = "Coefficient Estimate")
+}
+
+# Criar e salvar os gráficos de tornado
+tornado_sfaic <- criar_grafico_tornado(sfaic, "SFAIC Model")
+tornado_sfbic <- criar_grafico_tornado(sfbic, "SFBIC Model")
+
+# Salvar os gráficos
+ggsave("tornado_sfaic.png", plot = tornado_sfaic, width = 30, height = 8)
+ggsave("tornado_sfbic.png", plot = tornado_sfbic, width = 30, height = 8)
+
+cat("Gráficos de tornado salvos com sucesso nos arquivos tornado_sfaic.png e tornado_sfbic.png")
