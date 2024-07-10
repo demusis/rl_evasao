@@ -42,7 +42,6 @@ AIC(ajuste_nulo)
 BIC(ajuste_nulo)
 
 sfaic <- step(ajuste_nulo, scope=formula(ajuste), direction="forward")
-
 sfbic <- step(ajuste_nulo, scope=formula(ajuste), direction="forward", k=log(nrow(dados_numericos)))
 summary(sfbic)
 
@@ -111,11 +110,24 @@ salvar_resumo_modelo <- function(modelo, nome_arquivo, metodo, dados, resposta) 
   saveWorkbook(wb, paste0(nome_arquivo, ".xlsx"), overwrite = TRUE)
 }
 
-# Salvar os modelos sfaic e sfbic
-salvar_resumo_modelo(sfaic, "sfaic_model", "AIC", dados_numericos, variavel_resposta)
-salvar_resumo_modelo(sfbic, "sfbic_model", "BIC", dados_numericos, variavel_resposta)
-
-cat("Modelos salvos com sucesso nos arquivos sfaic_model.xlsx e sfbic_model.xlsx")
+# Função para salvar os gráficos padrão do modelo
+salvar_graficos_padrao <- function(modelo, nome_base) {
+  png(paste0(nome_base, "_residuals_vs_fitted.png"))
+  plot(modelo, which = 1)
+  dev.off()
+  
+  png(paste0(nome_base, "_qq_plot.png"))
+  plot(modelo, which = 2)
+  dev.off()
+  
+  png(paste0(nome_base, "_scale_location.png"))
+  plot(modelo, which = 3)
+  dev.off()
+  
+  png(paste0(nome_base, "_cooks_distance.png"))
+  plot(modelo, which = 4)
+  dev.off()
+}
 
 # Função para criar gráfico de tornado
 criar_grafico_tornado <- function(modelo, nome_grafico) {
@@ -135,12 +147,17 @@ criar_grafico_tornado <- function(modelo, nome_grafico) {
          y = "Coefficient Estimate")
 }
 
+# Salvar os modelos sfaic e sfbic
+salvar_resumo_modelo(sfaic, "sfaic_model", "AIC", dados_numericos, variavel_resposta)
+salvar_resumo_modelo(sfbic, "sfbic_model", "BIC", dados_numericos, variavel_resposta)
+
 # Criar e salvar os gráficos de tornado
 tornado_sfaic <- criar_grafico_tornado(sfaic, "SFAIC Model")
 tornado_sfbic <- criar_grafico_tornado(sfbic, "SFBIC Model")
 
-# Salvar os gráficos
 ggsave("tornado_sfaic.png", plot = tornado_sfaic, width = 30, height = 8)
 ggsave("tornado_sfbic.png", plot = tornado_sfbic, width = 30, height = 8)
 
-cat("Gráficos de tornado salvos com sucesso nos arquivos tornado_sfaic.png e tornado_sfbic.png")
+# Salvar os gráficos padrão do modelo
+salvar_graficos_padrao(sfaic, "sfaic_model")
+salvar_graficos_padrao(sfbic, "sfbic_model")
