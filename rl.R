@@ -12,7 +12,7 @@ setwd("~/rl")
 nome_arquivo <- "regressao_logistica"
 
 # Carregar a planilha
-caminho_arquivo <- "dados-dummy.xlsx" # Substitua pelo caminho correto do arquivo
+caminho_arquivo <- "dados-dummy-agrupados.xlsx" # Substitua pelo caminho correto do arquivo
 dados <- as.data.frame(read_excel(caminho_arquivo))
 
 # Selecionar apenas as colunas numéricas
@@ -22,14 +22,14 @@ dados_numericos <- dados %>% select_if(is.numeric)
 dados_numericos <- dados_numericos %>% mutate_all(~replace(., is.na(.), 0))
 
 # Retirar variáveis desnecessárias
-dados_numericos <- dados_numericos[,c(-1, -2)]
+# dados_numericos <- dados_numericos[,c(-1, -2)]
 
 # Certifique-se de que esta coluna seja binária
-variavel_resposta <- dados_numericos[,113]
+variavel_resposta <- dados_numericos[,"evadido"]
 unique(variavel_resposta)
 
 # Modelo com todas as covariáveis
-ajuste <- glm(Evadiu ~ ., data=dados_numericos, family="binomial")
+ajuste <- glm(evadido ~ ., data=dados_numericos, family="binomial")
 
 summary(ajuste)
 logLik(ajuste)
@@ -37,7 +37,7 @@ AIC(ajuste)
 BIC(ajuste)
 
 # Modelo nulo (apenas com o intercepto)
-ajuste_nulo <- glm(Evadiu ~ 1, data=dados_numericos, family="binomial")
+ajuste_nulo <- glm(evadido ~ 1, data=dados_numericos, family="binomial")
 
 logLik(ajuste_nulo)
 AIC(ajuste_nulo)
@@ -176,12 +176,12 @@ ajustar_modelos <- function(dados_treino, dados_teste) {
   # Predições usando o modelo AIC
   predicoes_aic <- predict(sfaic, newdata = dados_teste, type="response")
   pred_class_aic <- ifelse(predicoes_aic > 0.5, 1, 0)
-  conf_matrix_aic <- confusionMatrix(factor(pred_class_aic), factor(dados_teste$Evadiu))
+  conf_matrix_aic <- confusionMatrix(factor(pred_class_aic), factor(dados_teste$evadido))
   
   # Predições usando o modelo BIC
   predicoes_bic <- predict(sfbic, newdata = dados_teste, type="response")
   pred_class_bic <- ifelse(predicoes_bic > 0.5, 1, 0)
-  conf_matrix_bic <- confusionMatrix(factor(pred_class_bic), factor(dados_teste$Evadiu))
+  conf_matrix_bic <- confusionMatrix(factor(pred_class_bic), factor(dados_teste$evadido))
   
   # Coletar coeficientes e odds ratios
   coef_aic <- coef(sfaic)
