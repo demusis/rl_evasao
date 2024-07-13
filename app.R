@@ -14,11 +14,13 @@ library(DT)
 
 # Interface do usuário
 ui <- fluidPage(
-	titlePanel("Análise de Regressão Logística"),
+	titlePanel("Análise de regressão logística com seleção stepwise e validação bootstrap"),
 	
 	sidebarLayout(
 		sidebarPanel(
 			fileInput("file1", "Escolha o arquivo XLSX", accept = c(".xlsx")),
+			checkboxInput("include_bootstrap", "Efetuar validação bootstrap", value = FALSE),
+			sliderInput("proporcao_treino", "Particionemento para treino", min = 50, max = 95, value = 80),
 			sliderInput("slider1", "Repetições Bootstrap", min = 5, max = 10000, value = 100),
 			actionButton("analyze", "Analisar")
 		),
@@ -150,10 +152,7 @@ server <- function(input, output) {
 			
 			return(resultado)
 		}
-		
-		aaaa <-- resultados_bootstrap$coef_aic
-		
-		calcular_ic(resultados_bootstrap$coef_aic)
+
 		
 		
 		# --------------------------------------------------------------------------		
@@ -226,10 +225,25 @@ server <- function(input, output) {
 		# Função para aplicar o bootstrap
 		bootstrap_modelos <- function(dados, n_bootstrap) {
 			resultados <- replicate(n_bootstrap, {
+				num_individuos <- nrow(dados)
+				
+				# Número de indivíduos no conjunto de treino
+				num_treino <- round(input$proporcao_treino * num_individuos/100)
+				
+				# Amostra aleatória, sem reposição, de índices para o conjunto de treino
+				indices_treino <- sample(num_individuos, num_treino, replace = FALSE)
+				
+				# Indivíduos restantes para o conjunto de teste
+				indices_teste <- setdiff(1:num_individuos, indices_treino)
+				
 				# Amostra bootstrap
-				indices_bootstrap <- sample(nrow(dados), replace = TRUE)
-				dados_treino <- dados[indices_bootstrap, ]
-				dados_teste <- dados[-unique(indices_bootstrap), ]
+				indices_bootstrap_treino <- sample(num_treino, num_treino, replace = TRUE)
+				indices_bootstrap_teste <- sample(num_individuos-num_treino, 
+																					num_individuos-num_treino, 
+																					replace = TRUE)
+				
+				dados_treino <- dados[indices_treino[indices_bootstrap_treino], ]
+				dados_teste <- dados[indices_teste[indices_bootstrap_teste], ]
 				
 				# Ajustar modelos e calcular métricas
 				ajustar_modelos(dados_treino, dados_teste)
@@ -260,12 +274,17 @@ server <- function(input, output) {
 			)
 		}
 
-		resultados_bootstrap <<- bootstrap_modelos(dados_numericos, n_bootstrap = input$slider1)
+		if (input$include_bootstrap) {
+			resultados_bootstrap <<- bootstrap_modelos(dados_numericos, n_bootstrap = input$slider1)
+		} 
+		
 		
 		# --------------------------------------------------------------------------
 
 		# Exibir os resumos dos modelos
 		output$bootAIC <- renderDT({
+			if (input$include_bootstrap) {
+				
 			dfBootAIC <- resultados_bootstrap$metrics_aic
 			rownames(dfBootAIC) <- NULL
 			dfBootAIC <- as.data.frame(dfBootAIC)
@@ -278,10 +297,12 @@ server <- function(input, output) {
 										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
 									)
 								)
-			)
+			)}
 		})
 
 		output$bootCoefAIC <- renderDT({
+			if (input$include_bootstrap) {
+				
 			dfBootCoefAIC <- resultados_bootstrap$coef_aic
 			rownames(dfBootCoefAIC) <- NULL
 			dfBootCoefAIC <- as.data.frame(dfBootCoefAIC)
@@ -298,9 +319,13 @@ server <- function(input, output) {
 					)
 				)
 			)
+			}
 		})
 
 		output$bootORAIC <- renderDT({
+			if (input$include_bootstrap) {
+				
+			
 			dfBootORAIC <- resultados_bootstrap$odds_ratios_aic
 			rownames(dfBootORAIC) <- NULL
 			dfBootORAIC <- as.data.frame(dfBootORAIC)
@@ -314,12 +339,13 @@ server <- function(input, output) {
 										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
 									)
 								)
-			)
+			)}
 		})
 		
 		
 		
 		output$bootBIC <- renderDT({
+			if (input$include_bootstrap) {
 			dfBootBIC <- resultados_bootstrap$metrics_bic
 			rownames(dfBootBIC) <- NULL
 			dfBootBIC <- as.data.frame(dfBootBIC)
@@ -333,9 +359,12 @@ server <- function(input, output) {
 									)
 								)
 			)
+			}
 		})
 		
 		output$bootCoefBIC <- renderDT({
+			if (input$include_bootstrap) {
+				
 			dfBootCoefBIC <- resultados_bootstrap$coef_bic
 			rownames(dfBootCoefBIC) <- NULL
 			dfBootCoefBIC <- as.data.frame(dfBootCoefBIC)
@@ -349,10 +378,12 @@ server <- function(input, output) {
 										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
 									)
 								)
-			)
+			)}
 		})
 		
 		output$bootORBIC <- renderDT({
+			if (input$include_bootstrap) {
+				
 			dfBootORBIC <- resultados_bootstrap$odds_ratios_bic
 			rownames(dfBootORBIC) <- NULL
 			dfBootORBIC <- as.data.frame(dfBootORBIC)
@@ -366,7 +397,7 @@ server <- function(input, output) {
 										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
 									)
 								)
-			)
+			)}
 		})
 		
 		
