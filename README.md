@@ -1,4 +1,4 @@
-### Descrição do Código `app.R` para o README do GitHub
+### Código desenvolvido para a dissertação de Adriana Amorim De Musis.
 
 ---
 
