@@ -67,18 +67,18 @@ ui <- fluidPage(
 				tabPanel("Bootstrap", 
 								 h3("AIC"),
 								 h4("Estatísticas"),
-								  DTOutput("bootAIC"),
+								 DTOutput("bootAIC"),
 								 h4("Coeficientes"),
-								  DTOutput("bootCoefAIC"),
+								 DTOutput("bootCoefAIC"),
 								 h4("Odds ratio"),
-								  DTOutput("bootORAIC"),
-				         h3("BIC"),
+								 DTOutput("bootORAIC"),
+								 h3("BIC"),
 								 h4("Estatísticas"),
-								  DTOutput("bootBIC"),
+								 DTOutput("bootBIC"),
 								 h4("Coeficientes"),
-								  DTOutput("bootCoefBIC"),
+								 DTOutput("bootCoefBIC"),
 								 h4("Odds ratio"),
-								  DTOutput("bootORBIC")),
+								 DTOutput("bootORBIC")),
 				
 			)
 		)
@@ -152,7 +152,7 @@ server <- function(input, output) {
 			
 			return(resultado)
 		}
-
+		
 		
 		
 		# --------------------------------------------------------------------------		
@@ -273,131 +273,131 @@ server <- function(input, output) {
 				odds_ratios_bic = odds_ratios_bic
 			)
 		}
-
+		
 		if (input$include_bootstrap) {
 			resultados_bootstrap <<- bootstrap_modelos(dados_numericos, n_bootstrap = input$slider1)
 		} 
 		
 		
 		# --------------------------------------------------------------------------
-
+		
 		# Exibir os resumos dos modelos
 		output$bootAIC <- renderDT({
 			if (input$include_bootstrap) {
 				
-			dfBootAIC <- resultados_bootstrap$metrics_aic
-			rownames(dfBootAIC) <- NULL
-			dfBootAIC <- as.data.frame(dfBootAIC)
-			datatable(calcular_ic(dfBootAIC), rownames = FALSE, 
-								extensions = 'Buttons',
-								options = list(
-									dom = 'Bfrtip',
-									buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-									language = list(
-										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+				dfBootAIC <- resultados_bootstrap$metrics_aic
+				rownames(dfBootAIC) <- NULL
+				dfBootAIC <- as.data.frame(dfBootAIC)
+				datatable(calcular_ic(dfBootAIC), rownames = FALSE, 
+									extensions = 'Buttons',
+									options = list(
+										dom = 'Bfrtip',
+										buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+										language = list(
+											url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+										)
 									)
-								)
-			)}
+				)}
 		})
-
+		
 		output$bootCoefAIC <- renderDT({
 			if (input$include_bootstrap) {
 				
-			dfBootCoefAIC <- resultados_bootstrap$coef_aic
-			rownames(dfBootCoefAIC) <- NULL
-			dfBootCoefAIC <- as.data.frame(dfBootCoefAIC)
-			auxc <- calcular_ic(dfBootCoefAIC)
-			datatable(
-				auxc, 
-				rownames = FALSE,
-				extensions = 'Buttons',
-				options = list(
-					dom = 'Bfrtip',
-					buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-					language = list(
-						url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+				dfBootCoefAIC <- resultados_bootstrap$coef_aic
+				rownames(dfBootCoefAIC) <- NULL
+				dfBootCoefAIC <- as.data.frame(dfBootCoefAIC)
+				auxc <- calcular_ic(dfBootCoefAIC)
+				datatable(
+					auxc, 
+					rownames = FALSE,
+					extensions = 'Buttons',
+					options = list(
+						dom = 'Bfrtip',
+						buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+						language = list(
+							url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+						)
 					)
 				)
-			)
 			}
 		})
-
+		
 		output$bootORAIC <- renderDT({
 			if (input$include_bootstrap) {
 				
-			
-			dfBootORAIC <- resultados_bootstrap$odds_ratios_aic
-			rownames(dfBootORAIC) <- NULL
-			dfBootORAIC <- as.data.frame(dfBootORAIC)
-			auxc <- calcular_ic(dfBootORAIC)
-			datatable(auxc, rownames = FALSE, 
-								extensions = 'Buttons',
-								options = list(
-									dom = 'Bfrtip',
-									buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-									language = list(
-										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+				
+				dfBootORAIC <- resultados_bootstrap$odds_ratios_aic
+				rownames(dfBootORAIC) <- NULL
+				dfBootORAIC <- as.data.frame(dfBootORAIC)
+				auxc <- calcular_ic(dfBootORAIC)
+				datatable(auxc, rownames = FALSE, 
+									extensions = 'Buttons',
+									options = list(
+										dom = 'Bfrtip',
+										buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+										language = list(
+											url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+										)
 									)
-								)
-			)}
+				)}
 		})
 		
 		
 		
 		output$bootBIC <- renderDT({
 			if (input$include_bootstrap) {
-			dfBootBIC <- resultados_bootstrap$metrics_bic
-			rownames(dfBootBIC) <- NULL
-			dfBootBIC <- as.data.frame(dfBootBIC)
-			datatable(calcular_ic(dfBootBIC), rownames = FALSE, 
-								extensions = 'Buttons',
-								options = list(
-									dom = 'Bfrtip',
-									buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-									language = list(
-										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+				dfBootBIC <- resultados_bootstrap$metrics_bic
+				rownames(dfBootBIC) <- NULL
+				dfBootBIC <- as.data.frame(dfBootBIC)
+				datatable(calcular_ic(dfBootBIC), rownames = FALSE, 
+									extensions = 'Buttons',
+									options = list(
+										dom = 'Bfrtip',
+										buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+										language = list(
+											url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+										)
 									)
-								)
-			)
+				)
 			}
 		})
 		
 		output$bootCoefBIC <- renderDT({
 			if (input$include_bootstrap) {
 				
-			dfBootCoefBIC <- resultados_bootstrap$coef_bic
-			rownames(dfBootCoefBIC) <- NULL
-			dfBootCoefBIC <- as.data.frame(dfBootCoefBIC)
-			auxc <- calcular_ic(dfBootCoefBIC)
-			datatable(auxc, rownames = FALSE,
-								extensions = 'Buttons',
-								options = list(
-									dom = 'Bfrtip',
-									buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-									language = list(
-										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+				dfBootCoefBIC <- resultados_bootstrap$coef_bic
+				rownames(dfBootCoefBIC) <- NULL
+				dfBootCoefBIC <- as.data.frame(dfBootCoefBIC)
+				auxc <- calcular_ic(dfBootCoefBIC)
+				datatable(auxc, rownames = FALSE,
+									extensions = 'Buttons',
+									options = list(
+										dom = 'Bfrtip',
+										buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+										language = list(
+											url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+										)
 									)
-								)
-			)}
+				)}
 		})
 		
 		output$bootORBIC <- renderDT({
 			if (input$include_bootstrap) {
 				
-			dfBootORBIC <- resultados_bootstrap$odds_ratios_bic
-			rownames(dfBootORBIC) <- NULL
-			dfBootORBIC <- as.data.frame(dfBootORBIC)
-			auxc <- calcular_ic(dfBootORBIC)
-			datatable(auxc, rownames = FALSE,
-								extensions = 'Buttons',
-								options = list(
-									dom = 'Bfrtip',
-									buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
-									language = list(
-										url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+				dfBootORBIC <- resultados_bootstrap$odds_ratios_bic
+				rownames(dfBootORBIC) <- NULL
+				dfBootORBIC <- as.data.frame(dfBootORBIC)
+				auxc <- calcular_ic(dfBootORBIC)
+				datatable(auxc, rownames = FALSE,
+									extensions = 'Buttons',
+									options = list(
+										dom = 'Bfrtip',
+										buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+										language = list(
+											url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+										)
 									)
-								)
-			)}
+				)}
 		})
 		
 		
