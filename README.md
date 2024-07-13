@@ -79,25 +79,6 @@ Certifique-se de que todas essas bibliotecas estejam instaladas antes de rodar o
     runApp("app.R")
     ```
 
-## Contribuição
-
-Sinta-se à vontade para contribuir com melhorias ou correções. Para isso, siga os passos abaixo:
-
-1. Faça um fork do projeto.
-2. Crie uma nova branch para suas modificações:
-    ```bash
-    git checkout -b minha-modificacao
-    ```
-3. Faça suas alterações e commit:
-    ```bash
-    git commit -am 'Adicionei uma nova funcionalidade'
-    ```
-4. Envie suas alterações para o repositório original:
-    ```bash
-    git push origin minha-modificacao
-    ```
-5. Crie um Pull Request.
-
 ## Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para mais detalhes.
