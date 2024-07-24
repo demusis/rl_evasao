@@ -31,8 +31,7 @@ O painel principal possui várias abas para exibir diferentes tipos de resultado
    - Cook’s Distance Plot
    - Curvas ROC (AIC e BIC)
    - Gráficos de Tornado
-4. **Cruzamentos**: Apresenta tabelas e gráficos de cruzamentos para AIC e BIC.
-5. **Bootstrap**: Exibe estatísticas e coeficientes para os modelos AIC e BIC com validação bootstrap.
+4. **Bootstrap**: Exibe estatísticas e coeficientes para os modelos AIC e BIC com validação bootstrap.
 
 ### Server
 O servidor processa os dados e gera os resultados conforme as opções selecionadas pelo usuário.
